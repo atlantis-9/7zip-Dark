@@ -43,6 +43,9 @@ O/
 *.sys
 *.ocx
 
+# Packaged/local run folder (built binaries, tests, screenshots)
+/bin/
+
 # Visual Studio / MSBuild
 .vs/
 *.suo
