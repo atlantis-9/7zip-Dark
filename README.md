@@ -7,3 +7,4 @@
 
 ![Main App](https://github.com/atlantis-9/7zip-Dark/blob/27c35ef6e343bfbcf741b79c8927987873af9398/Screenshots/Screenshot%202026-08-07%20235015.png)
 ![Options Window](https://github.com/atlantis-9/7zip-Dark/blob/e7dab00c385bba32a6231c5e2433110f6f2d41df/Screenshots/Screenshot%202026-08-07%20235108.png)
+![Benchmark Window](https://github.com/atlantis-9/7zip-Dark/blob/28816ee2328de8b2115a66d7d6a484ff6cbd1eb3/Screenshots/Screenshot%202026-08-07%20235338.png)
