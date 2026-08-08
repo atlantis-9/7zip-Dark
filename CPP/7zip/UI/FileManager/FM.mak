@@ -1,6 +1,7 @@
 CFLAGS = $(CFLAGS) \
   -DZ7_LANG \
   -DZ7_DARK_MODE \
+  -DZ7_FM \
 
 !IFDEF UNDER_CE
 LIBS = $(LIBS) ceshell.lib Commctrl.lib

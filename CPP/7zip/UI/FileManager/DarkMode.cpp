@@ -4,9 +4,11 @@
 
 #include "DarkMode.h"
 #include "RegistryUtils.h"
-#include "App.h"
 
-using namespace NWindows;
+/* File Manager only: panel refresh after settings toggle. */
+#ifdef Z7_FM
+#include "App.h"
+#endif
 
 // Approximate Windows 11 dark palette
 static const COLORREF kDark_Bk       = RGB(32, 32, 32);
@@ -436,7 +438,8 @@ static void PaintPushButtonDark(HWND hwnd)
   const int len = GetWindowTextW(hwnd, text, 256);
   SetBkMode(hdc, TRANSPARENT);
   SetTextColor(hdc, disabled ? RGB(140, 140, 140) : kDark_Text);
-  DrawTextW(hdc, text, len, &rc, DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX);
+  /* Do not use DT_NOPREFIX — resource labels use & for accelerators (&Restart, &Stop). */
+  DrawTextW(hdc, text, len, &rc, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
   if (GetFocus() == hwnd)
   {
@@ -1479,6 +1482,7 @@ void DarkMode_ApplyApp(HWND mainHwnd)
 #endif
   }
 
+#ifdef Z7_FM
   if (g_App._toolBar)
     DarkMode_ApplyToToolBar(g_App._toolBar);
 
@@ -1503,6 +1507,7 @@ void DarkMode_ApplyApp(HWND mainHwnd)
     DarkMode_ApplyToChildControls(panel);
     panel.InvalidateRect(NULL, TRUE);
   }
+#endif
 
   if (mainHwnd)
     DarkMode_ApplyToChildControls(mainHwnd);
@@ -1550,16 +1555,18 @@ void DarkMode_OnInitDialog(HWND hwnd)
     return;
 #ifndef UNDER_CE
   AllowDarkForWindow(hwnd, g_DarkMode);
-  ApplyImmersiveDarkTitleBar(hwnd, g_DarkMode);
   /*
-    Do not apply DarkMode_Explorer to the dialog itself — it leaves
-    group-box frames and radio/checkbox label colors on the light palette.
-    Empty theme + WM_CTLCOLOR* gives readable light text on dark fill.
+    Top-level dialog chrome must stay themed + DWM dark (same as main app /
+    Options). SetTheme("", "") forces classic light title bar and 3D borders —
+    that was the "Delete Temporary Files" frame mismatch.
+    Child controls still get empty/custom themes in ApplyToChildControls.
   */
   if (g_DarkMode)
-    SetTheme(hwnd, L"");
+    SetTheme(hwnd, L"DarkMode_Explorer");
   else
     SetTheme(hwnd, L"Explorer");
+  ApplyImmersiveDarkTitleBar(hwnd, g_DarkMode);
+  RefreshWindowFrame(hwnd);
 #endif
   DarkMode_ApplyToChildControls(hwnd);
   if (g_DarkMode)

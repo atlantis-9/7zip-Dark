@@ -2,6 +2,7 @@ PROG = 7zG.exe
 CFLAGS = $(CFLAGS) \
   -DZ7_LANG \
   -DZ7_EXTERNAL_CODECS \
+  -DZ7_DARK_MODE \
 
 !IFDEF UNDER_CE
 LIBS = $(LIBS) ceshell.lib Commctrl.lib
@@ -108,6 +109,7 @@ AR_COMMON_OBJS = \
   $O\OutStreamWithCRC.obj \
 
 FM_OBJS = \
+  $O\DarkMode.obj \
   $O\EditDialog.obj \
   $O\ExtractCallback.obj \
   $O\FormatUtils.obj \

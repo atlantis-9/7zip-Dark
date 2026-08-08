@@ -27,6 +27,7 @@
 
 #include "../FileManager/StringUtils.h"
 #include "../FileManager/LangUtils.h"
+#include "../FileManager/DarkMode.h"
 
 #include "BenchmarkDialog.h"
 #include "ExtractGUI.h"
@@ -433,6 +434,11 @@ int APIENTRY WinMain(HINSTANCE  hInstance, HINSTANCE /* hPrevInstance */,
 
   #ifdef Z7_LANG
   LoadLangOneTime();
+  #endif
+
+  #ifdef Z7_DARK_MODE
+  /* Same DarkMode registry flag as File Manager (Options → Settings). */
+  DarkMode_LoadFromSettings();
   #endif
 
   // setlocale(LC_COLLATE, ".ACP");
