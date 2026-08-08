@@ -633,6 +633,10 @@ bool CPanel::OnCreate(CREATESTRUCT * /* createStruct */)
     DarkMode_ApplyToReBar(_headerReBar);
   if (_statusBar)
     DarkMode_ApplyToStatusBar(_statusBar);
+#ifndef UNDER_CE
+  if (_headerComboBox)
+    DarkMode_ApplyToComboBoxEx(_headerComboBox);
+#endif
   DarkMode_ApplyToChildControls(*this);
 
   SetTimer(kTimerID, kTimerElapse);

@@ -13,6 +13,11 @@ extern HINSTANCE g_hInstance;
 extern bool g_IsNT;
 #endif
 
+#ifdef Z7_DARK_MODE
+/* Global (not in NWindows::NControl) — defined in FileManager/DarkMode.cpp */
+extern int CALLBACK DarkMode_PropSheetCallback(HWND hwnd, UINT msg, LPARAM lParam);
+#endif
+
 namespace NWindows {
 namespace NControl {
 
@@ -164,6 +169,10 @@ INT_PTR MyPropertySheet(const CObjectVector<CPageInfo> &pagesInfo, HWND hwndPare
     sheet.nStartPage = 0;
     sheet.ppsp = (LPCPROPSHEETPAGEA)(const void *)pagesA.ConstData();
     sheet.pfnCallback = NULL;
+    #ifdef Z7_DARK_MODE
+    sheet.dwFlags |= PSH_USECALLBACK;
+    sheet.pfnCallback = ::DarkMode_PropSheetCallback;
+    #endif
     return ::PropertySheetA(&sheet);
   }
   else
@@ -179,6 +188,10 @@ INT_PTR MyPropertySheet(const CObjectVector<CPageInfo> &pagesInfo, HWND hwndPare
     sheet.nStartPage = 0;
     sheet.ppsp = (LPCPROPSHEETPAGEW)(const void *)pagesW.ConstData();
     sheet.pfnCallback = NULL;
+    #ifdef Z7_DARK_MODE
+    sheet.dwFlags |= PSH_USECALLBACK;
+    sheet.pfnCallback = ::DarkMode_PropSheetCallback;
+    #endif
     return ::PropertySheetW(&sheet);
   }
 }

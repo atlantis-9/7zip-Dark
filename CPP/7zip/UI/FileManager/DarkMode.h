@@ -21,6 +21,7 @@ void DarkMode_ApplyToListView(HWND hwnd);
 void DarkMode_ApplyToToolBar(HWND hwnd);
 void DarkMode_ApplyToStatusBar(HWND hwnd);
 void DarkMode_ApplyToReBar(HWND hwnd);
+void DarkMode_ApplyToComboBoxEx(HWND hwnd);
 
 /* Enumerate immediate children and apply dark themes where useful. */
 void DarkMode_ApplyToChildControls(HWND parent);
@@ -55,6 +56,13 @@ bool DarkMode_OnMainWindowMessage(HWND hwnd, UINT message, WPARAM wParam, LPARAM
 
 /* After WM_INITDIALOG: theme dialog + children. */
 void DarkMode_OnInitDialog(HWND hwnd);
+
+/* Property sheet (Options, etc.): title bar, tabs, bottom buttons. */
+void DarkMode_ApplyToPropSheet(HWND hwnd);
+int CALLBACK DarkMode_PropSheetCallback(HWND hwnd, UINT msg, LPARAM lParam);
+
+/* Tab control NM_CUSTOMDRAW. */
+bool DarkMode_OnTabCustomDraw(LPNMCUSTOMDRAW cd, LRESULT &result);
 
 void DarkMode_Cleanup();
 
