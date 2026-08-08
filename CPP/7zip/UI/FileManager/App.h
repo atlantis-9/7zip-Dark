@@ -301,7 +301,8 @@ public:
   void ExtractArchives() { GetFocusedPanel().ExtractArchives(); }
   void TestArchives() { GetFocusedPanel().TestArchives(); }
 
-  void OnNotify(int ctrlID, LPNMHDR pnmh);
+  /* Returns true if *result must be returned from WM_NOTIFY (e.g. toolbar custom draw). */
+  bool OnNotify(int ctrlID, LPNMHDR pnmh, LRESULT &result);
 
   UString PrevTitle;
   void RefreshTitle(bool always = false);

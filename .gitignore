@@ -1,0 +1,120 @@
+# 7-Zip / MSVC nmake build outputs
+# Object / intermediate dirs used by 7zip.mak (PLATFORM or default "o")
+x64/
+x86/
+arm64/
+arm/
+ia64/
+o/
+O/
+**/x64/
+**/x86/
+**/arm64/
+**/arm/
+**/ia64/
+**/o/
+
+# Compiled objects and intermediates
+*.obj
+*.o
+*.pch
+*.pdb
+*.idb
+*.ilk
+*.exp
+*.lib
+*.map
+*.res
+*.sbr
+*.bsc
+*.cod
+*.i
+*.ipdb
+*.iobj
+*.tlog
+*.lastbuildstate
+*.recipe
+*.log
+
+# Binaries produced by this tree
+*.exe
+*.dll
+*.sfx
+*.sys
+*.ocx
+
+# Visual Studio / MSBuild
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.VC.db
+*.VC.VC.opendb
+*.opensdf
+*.sdf
+*.aps
+ipch/
+[Dd]ebug/
+[Rr]elease/
+[Bb]in/
+[Oo]bj/
+*.ncb
+*.opt
+*.plg
+
+# Visual Studio project user options (keep .dsp/.dsw sources)
+*.vcxproj.user
+*.vcproj.*.user
+
+# Clang / GCC local out-of-tree builds
+*.a
+*.so
+*.so.*
+*.dylib
+*.d
+*.depend
+*.out
+
+# Assembler listings sometimes emitted next to objs
+**/asm/*.lst
+*.lst
+
+# Windows / OS junk
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+*.stackdump
+
+# Editors / IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# CMake / Ninja (if used later)
+CMakeCache.txt
+CMakeFiles/
+cmake-install.cmake
+compile_commands.json
+build/
+out/
+
+# Test / temp artifacts
+*.tmp
+*.temp
+*.bak
+*.orig
+test_work/
+*.7z
+*.zip
+!**/test/**/*.7z
+
+# Local notes / secrets
+.env
+.env.*
+*.local

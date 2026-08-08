@@ -9,6 +9,7 @@
 #define IDX_SETTINGS_SINGLE_CLICK           2506
 #define IDX_SETTINGS_ALTERNATIVE_SELECTION  2507
 #define IDX_SETTINGS_LARGE_PAGES            2508
+#define IDX_SETTINGS_DARK_MODE              2509
 
 #define IDT_MEM_USAGE_EXTRACT               7816
 

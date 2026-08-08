@@ -14,6 +14,7 @@
 #include "AboutDialog.h"
 #include "App.h"
 #include "BrowseDialog2.h"
+#include "DarkMode.h"
 #include "HelpUtils.h"
 #include "LangUtils.h"
 #include "MyLoadMenu.h"
@@ -434,6 +435,7 @@ void OnMenuActivating(HWND /* hWnd */, HMENU hMenu, int position)
     menu.CheckItemByID(IDM_VIEW_TOOLBARS_LARGE_BUTTONS, g_App.LargeButtons);
     menu.CheckItemByID(IDM_VIEW_TOOLBARS_SHOW_BUTTONS_TEXT, g_App.ShowButtonsLables);
     menu.CheckItemByID(IDM_VIEW_AUTO_REFRESH, g_App.Get_AutoRefresh_Mode());
+    menu.CheckItemByID(IDM_VIEW_DARK_MODE, DarkMode_IsEnabled());
     // menu.CheckItemByID(IDM_VIEW_SHOW_STREAMS, g_App.Get_ShowNtfsStrems_Mode());
     // menu.CheckItemByID(IDM_VIEW_SHOW_DELETED, g_App.ShowDeletedFiles);
 
@@ -888,6 +890,18 @@ bool OnMenuCommand(HWND hWnd, unsigned id)
     case IDM_VIEW_FLAT_VIEW:      g_App.ChangeFlatMode(); break;
     case IDM_VIEW_REFRESH:        g_App.RefreshView(); break;
     case IDM_VIEW_AUTO_REFRESH:   g_App.Change_AutoRefresh_Mode(); break;
+    case IDM_VIEW_DARK_MODE:
+    {
+      CFmSettings st;
+      st.Load();
+      st.DarkMode = !st.DarkMode;
+      st.Save();
+      DarkMode_SetEnabled(st.DarkMode);
+      DarkMode_ApplyApp(hWnd);
+      g_App.SetListSettings();
+      g_App.RefreshAllPanels();
+      break;
+    }
 
     // case IDM_VIEW_SHOW_STREAMS:     g_App.Change_ShowNtfsStrems_Mode(); break;
     /*

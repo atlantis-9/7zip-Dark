@@ -43,6 +43,28 @@ DialogProcedure(HWND dialogHWND, UINT message, WPARAM wParam, LPARAM lParam)
      the dialog manager performs the default dialog operation in response to the message.
   */
 
+  #ifdef Z7_DARK_MODE
+  /* WM_CTLCOLOR* return value is a brush handle, not TRUE/FALSE. */
+  switch (message)
+  {
+    case WM_CTLCOLORDLG:
+    case WM_CTLCOLORSTATIC:
+    case WM_CTLCOLOREDIT:
+    case WM_CTLCOLORBTN:
+    case WM_CTLCOLORLISTBOX:
+    case WM_CTLCOLORSCROLLBAR:
+    {
+      try
+      {
+        if (dialog->OnMessage(message, wParam, lParam))
+          return (INT_PTR)dialog->GetMsgResult();
+      }
+      catch(...) {}
+      return FALSE;
+    }
+  }
+  #endif
+
   try { return BoolToBOOL(dialog->OnMessage(message, wParam, lParam)); }
   catch(...) { return TRUE; }
 }
@@ -51,13 +73,42 @@ bool CDialog::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 {
   switch (message)
   {
-    case WM_INITDIALOG: return OnInit();
+    case WM_INITDIALOG:
+    {
+      const bool res = OnInit();
+      #ifdef Z7_DARK_MODE
+      {
+        // Apply after controls exist (OnInit may create some dynamically).
+        extern void DarkMode_OnInitDialog(HWND hwnd);
+        DarkMode_OnInitDialog(_window);
+      }
+      #endif
+      return res;
+    }
     case WM_COMMAND: return OnCommand(HIWORD(wParam), LOWORD(wParam), lParam);
     case WM_NOTIFY: return OnNotify((UINT)wParam, (LPNMHDR) lParam);
     case WM_TIMER: return OnTimer(wParam, lParam);
     case WM_SIZE: return OnSize(wParam, LOWORD(lParam), HIWORD(lParam));
     case WM_DESTROY: return OnDestroy();
     case WM_HELP: OnHelp(); return true;
+    #ifdef Z7_DARK_MODE
+    case WM_CTLCOLORDLG:
+    case WM_CTLCOLORSTATIC:
+    case WM_CTLCOLOREDIT:
+    case WM_CTLCOLORBTN:
+    case WM_CTLCOLORLISTBOX:
+    case WM_CTLCOLORSCROLLBAR:
+    {
+      extern bool DarkMode_OnCtlColor(UINT message, WPARAM wParam, LPARAM lParam, LRESULT &result);
+      LRESULT res = 0;
+      if (DarkMode_OnCtlColor(message, wParam, lParam, res))
+      {
+        SetMsgResult(res);
+        return true;
+      }
+      return false;
+    }
+    #endif
     /*
         OnHelp(
           #ifdef UNDER_CE

@@ -1,5 +1,6 @@
 CFLAGS = $(CFLAGS) \
   -DZ7_LANG \
+  -DZ7_DARK_MODE \
 
 !IFDEF UNDER_CE
 LIBS = $(LIBS) ceshell.lib Commctrl.lib
@@ -15,6 +16,7 @@ FM_OBJS = \
   $O\BrowseDialog.obj \
   $O\BrowseDialog2.obj \
   $O\ClassDefs.obj \
+  $O\DarkMode.obj \
   $O\EnumFormatEtc.obj \
   $O\ExtractCallback.obj \
   $O\FileFolderPluginOpen.obj \

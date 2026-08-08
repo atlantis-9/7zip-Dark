@@ -14,6 +14,7 @@
 #include "../../PropID.h"
 
 #include "App.h"
+#include "DarkMode.h"
 #include "Panel.h"
 #include "FormatUtils.h"
 
@@ -674,7 +675,7 @@ bool CPanel::OnNotifyList(LPNMHDR header, LRESULT &result)
 
     case NM_CUSTOMDRAW:
     {
-      if (_mySelectMode || (_markDeletedItems && _thereAreDeletedItems))
+      if (DarkMode_IsEnabled() || _mySelectMode || (_markDeletedItems && _thereAreDeletedItems))
         return OnCustomDraw((LPNMLVCUSTOMDRAW)header, result);
       break;
     }
@@ -718,13 +719,17 @@ bool CPanel::OnCustomDraw(LPNMLVCUSTOMDRAW lplvcd, LRESULT &result)
     if (_mySelectMode)
     {
       if (realIndex != kParentIndex && _selectedStatusVector[realIndex])
-       lplvcd->clrTextBk = RGB(255, 192, 192);
+       lplvcd->clrTextBk = DarkMode_GetHotTextBkColor();
     }
 
     if (_markDeletedItems && _thereAreDeletedItems)
     {
       if (IsItem_Deleted(realIndex))
-        lplvcd->clrText = RGB(255, 0, 0);
+        lplvcd->clrText = DarkMode_GetDeletedTextColor();
+    }
+    else if (DarkMode_IsEnabled())
+    {
+      lplvcd->clrText = DarkMode_GetTextColor();
     }
     // lplvcd->clrText = RGB(0, 0, 0);
     // result = CDRF_NEWFONT;

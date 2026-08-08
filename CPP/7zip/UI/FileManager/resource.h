@@ -95,8 +95,9 @@
 #define IDM_FOLDERS_HISTORY      736
 #define IDM_VIEW_REFRESH         737
 #define IDM_VIEW_AUTO_REFRESH    738
-// #define IDM_VIEW_SHOW_DELETED    739
-// #define IDM_VIEW_SHOW_STREAMS    740
+#define IDM_VIEW_DARK_MODE       739
+// #define IDM_VIEW_SHOW_DELETED    740
+// #define IDM_VIEW_SHOW_STREAMS    741
 
 #define IDM_VIEW_ARCHIVE_TOOLBAR            750
 #define IDM_VIEW_STANDARD_TOOLBAR           751

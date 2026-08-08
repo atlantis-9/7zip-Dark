@@ -21,6 +21,7 @@
 #include "SystemPageRes.h"
 
 #include "App.h"
+#include "DarkMode.h"
 #include "LangUtils.h"
 #include "MyLoadMenu.h"
 
@@ -83,6 +84,8 @@ void OptionsDialog(HWND hwndOwner, HINSTANCE /* hInstance */)
     */
     
     g_App.SetListSettings();
+    DarkMode_LoadFromSettings();
+    DarkMode_ApplyApp(hwndOwner);
     g_App.RefreshAllPanels();
     // ::PostMessage(hwndOwner, kLangWasChangedMessage, 0 , 0);
   }

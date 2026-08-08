@@ -33,6 +33,7 @@
 #include "resource.h"
 
 #include "App.h"
+#include "DarkMode.h"
 #include "FormatUtils.h"
 #include "LangUtils.h"
 #include "MyLoadMenu.h"
@@ -269,7 +270,10 @@ static BOOL InitInstance(int nCmdShow)
   // wc.hCursor = LoadCursor (NULL, IDC_ARROW);
   wc.hCursor = ::LoadCursor(NULL, IDC_SIZEWE);
   // wc.hbrBackground = (HBRUSH) GetStockObject(WHITE_BRUSH);
-  wc.hbrBackground = (HBRUSH) (COLOR_BTNFACE + 1);
+  DarkMode_LoadFromSettings();
+  wc.hbrBackground = DarkMode_IsEnabled()
+      ? DarkMode_GetBkBrush()
+      : (HBRUSH) (COLOR_BTNFACE + 1);
 
   wc.lpszMenuName =
     #ifdef UNDER_CE
@@ -328,68 +332,7 @@ static BOOL InitInstance(int nCmdShow)
     x, y, xSize, ySize, NULL, NULL, g_hInstance, NULL))
     return FALSE;
 
-  /*
-  // doesn't work
-  {
-    const HMODULE hmodule = LoadLibrary("UxTheme.dll");
-    if (hmodule)
-    {
-      {
-        const
-          Func_AllowDarkModeForWindow f = Z7_GET_PROC_ADDRESS(
-          Func_AllowDarkModeForWindow, hmodule,
-          MAKEINTRESOURCEA(133));
-        if (f)
-        {
-          BOOL res = f((HWND)wnd, TRUE);
-          res = res;
-        }
-      }
-      {
-        const
-          Func_SetPreferredAppMode f = Z7_GET_PROC_ADDRESS(
-          Func_SetPreferredAppMode, hmodule,
-          MAKEINTRESOURCEA(135));
-        if (f)
-        {
-          f(ForceDark);
-        }
-      }
-      {
-        const
-          Func_SetWindowTheme f = Z7_GET_PROC_ADDRESS(
-          Func_SetWindowTheme, hmodule,
-          "SetWindowTheme");
-        if (f)
-        {
-          // HRESULT hres = f((HWND)wnd, L"DarkMode_Explorer", NULL);
-          HRESULT hres = f((HWND)wnd, L"Explorer", NULL);
-          hres = hres;
-        }
-      }
-      FreeLibrary(hmodule);
-    }
-  }
-  {
-    const HMODULE hmodule = LoadLibrary("Dwmapi.dll");
-    if (hmodule)
-    {
-      const
-        Func_DwmSetWindowAttribute f = Z7_GET_PROC_ADDRESS(
-        Func_DwmSetWindowAttribute, hmodule,
-        "DwmSetWindowAttribute");
-      if (f)
-      {
-        #ifndef Z7_WIN_DWMWA_USE_IMMERSIVE_DARK_MODE
-        #define Z7_WIN_DWMWA_USE_IMMERSIVE_DARK_MODE 20
-        #endif
-        BOOL value = TRUE;
-        f((HWND)wnd, Z7_WIN_DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
-      }
-      FreeLibrary(hmodule);
-    }
-  }
-  */
+  DarkMode_ApplyToWindow((HWND)wnd);
 
   if (nCmdShow == SW_SHOWNORMAL ||
       nCmdShow == SW_SHOW
@@ -889,6 +832,12 @@ static void ExecuteCommand(UINT commandID)
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+  {
+    LRESULT darkRes = 0;
+    if (DarkMode_OnMainWindowMessage(hWnd, message, wParam, lParam, darkRes))
+      return darkRes;
+  }
+
   switch (message)
   {
     case WM_COMMAND:
@@ -1016,6 +965,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
       }
 
       g_WindowWasCreated = true;
+
+      DarkMode_ApplyApp(hWnd);
       
       // g_SplitterPos = 0;
 
@@ -1024,6 +975,29 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
       break;
     }
+
+    case WM_ERASEBKGND:
+      if (DarkMode_IsEnabled())
+      {
+        RECT rc;
+        ::GetClientRect(hWnd, &rc);
+        FillRect((HDC)wParam, &rc, DarkMode_GetBkBrush());
+        return 1;
+      }
+      break;
+
+    case WM_CTLCOLORDLG:
+    case WM_CTLCOLORSTATIC:
+    case WM_CTLCOLOREDIT:
+    case WM_CTLCOLORBTN:
+    case WM_CTLCOLORLISTBOX:
+    case WM_CTLCOLORSCROLLBAR:
+      {
+        LRESULT res = 0;
+        if (DarkMode_OnCtlColor(message, wParam, lParam, res))
+          return res;
+      }
+      break;
 
     case WM_CLOSE:
     {
@@ -1139,7 +1113,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     
     case WM_NOTIFY:
     {
-      g_App.OnNotify((int)wParam, (LPNMHDR)lParam);
+      LRESULT res = 0;
+      if (g_App.OnNotify((int)wParam, (LPNMHDR)lParam, res))
+        return res;
       break;
     }
     

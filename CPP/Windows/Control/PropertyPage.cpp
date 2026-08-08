@@ -32,6 +32,27 @@ APIENTRY MyProperyPageProcedure(HWND dialogHWND, UINT message, WPARAM wParam, LP
     return FALSE;
   if (message == WM_INITDIALOG)
     dialog->Attach(dialogHWND);
+  #ifdef Z7_DARK_MODE
+  switch (message)
+  {
+    case WM_CTLCOLORDLG:
+    case WM_CTLCOLORSTATIC:
+    case WM_CTLCOLOREDIT:
+    case WM_CTLCOLORBTN:
+    case WM_CTLCOLORLISTBOX:
+    case WM_CTLCOLORSCROLLBAR:
+    {
+      try
+      {
+        if (dialog->OnMessage(message, wParam, lParam))
+          return (INT_PTR)dialog->GetMsgResult();
+      }
+      catch(...) {}
+      return FALSE;
+    }
+  }
+  #endif
+
   try { return BoolToBOOL(dialog->OnMessage(message, wParam, lParam)); }
   catch(...) { return TRUE; }
 }

@@ -19,6 +19,7 @@
 
 #include "App.h"
 #include "CopyDialog.h"
+#include "DarkMode.h"
 #include "ExtractCallback.h"
 #include "FormatUtils.h"
 #include "IFolder.h"
@@ -100,6 +101,9 @@ void CApp::SetListSettings()
     panel._showRealFileIcons = st.ShowRealFileIcons;
     panel._exStyle = extendedStyle;
 
+    if (!panel.PanelCreated || !panel._listView)
+      continue;
+
     LONG_PTR style = panel._listView.GetStyle();
     if (st.AlternativeSelection)
       style |= LVS_SINGLESEL;
@@ -107,6 +111,7 @@ void CApp::SetListSettings()
       style &= ~(LONG_PTR)(DWORD)LVS_SINGLESEL;
     panel._listView.SetStyle(style);
     panel.SetExtendedStyle();
+    DarkMode_ApplyToListView(panel._listView);
   }
 }
 
@@ -269,6 +274,7 @@ void CApp::ReloadToolbars()
       for (i = 0; i < Z7_ARRAY_SIZE(g_StandardButtons); i++)
         AddButton(_buttonsImageList, _toolBar, g_StandardButtons[i], ShowButtonsLables, LargeButtons);
 
+    DarkMode_ApplyToToolBar(_toolBar);
     _toolBar.AutoSize();
   }
 }
@@ -933,31 +939,40 @@ int CApp::GetFocusedPanelIndex() const
 static UString g_ToolTipBuffer;
 static CSysString g_ToolTipBufferSys;
 
-void CApp::OnNotify(int /* ctrlID */, LPNMHDR pnmh)
+bool CApp::OnNotify(int /* ctrlID */, LPNMHDR pnmh, LRESULT &result)
 {
+  if (!pnmh)
+    return false;
+
+  if (pnmh->code == NM_CUSTOMDRAW &&
+      _toolBar && pnmh->hwndFrom == (HWND)_toolBar)
   {
-    if (pnmh->code == TTN_GETDISPINFO)
-    {
-      LPNMTTDISPINFO info = (LPNMTTDISPINFO)pnmh;
-      info->hinst = NULL;
-      g_ToolTipBuffer.Empty();
-      SetButtonText((int)info->hdr.idFrom, g_ToolTipBuffer);
-      g_ToolTipBufferSys = GetSystemString(g_ToolTipBuffer);
-      info->lpszText = g_ToolTipBufferSys.Ptr_non_const();
-      return;
-    }
-    #ifndef _UNICODE
-    if (pnmh->code == TTN_GETDISPINFOW)
-    {
-      LPNMTTDISPINFOW info = (LPNMTTDISPINFOW)pnmh;
-      info->hinst = NULL;
-      g_ToolTipBuffer.Empty();
-      SetButtonText((int)info->hdr.idFrom, g_ToolTipBuffer);
-      info->lpszText = g_ToolTipBuffer.Ptr_non_const();
-      return;
-    }
-    #endif
+    if (DarkMode_OnToolBarCustomDraw((LPNMTBCUSTOMDRAW)pnmh, result))
+      return true;
   }
+
+  if (pnmh->code == TTN_GETDISPINFO)
+  {
+    LPNMTTDISPINFO info = (LPNMTTDISPINFO)pnmh;
+    info->hinst = NULL;
+    g_ToolTipBuffer.Empty();
+    SetButtonText((int)info->hdr.idFrom, g_ToolTipBuffer);
+    g_ToolTipBufferSys = GetSystemString(g_ToolTipBuffer);
+    info->lpszText = g_ToolTipBufferSys.Ptr_non_const();
+    return false;
+  }
+  #ifndef _UNICODE
+  if (pnmh->code == TTN_GETDISPINFOW)
+  {
+    LPNMTTDISPINFOW info = (LPNMTTDISPINFOW)pnmh;
+    info->hinst = NULL;
+    g_ToolTipBuffer.Empty();
+    SetButtonText((int)info->hdr.idFrom, g_ToolTipBuffer);
+    info->lpszText = g_ToolTipBuffer.Ptr_non_const();
+    return false;
+  }
+  #endif
+  return false;
 }
 
 void CApp::RefreshTitle(bool always)

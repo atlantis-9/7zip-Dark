@@ -24,6 +24,7 @@
 #include "../Agent/IFolderArchive.h"
 
 #include "App.h"
+#include "DarkMode.h"
 #include "ExtractCallback.h"
 #include "FSFolder.h"
 #include "FormatUtils.h"
@@ -149,6 +150,27 @@ LRESULT CPanel::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
       if (OnContextMenu(HANDLE(wParam), GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)))
         return 0;
       break;
+    case WM_ERASEBKGND:
+      if (DarkMode_IsEnabled())
+      {
+        RECT rc;
+        GetClientRect(&rc);
+        FillRect((HDC)wParam, &rc, DarkMode_GetBkBrush());
+        return 1;
+      }
+      break;
+    case WM_CTLCOLORDLG:
+    case WM_CTLCOLORSTATIC:
+    case WM_CTLCOLOREDIT:
+    case WM_CTLCOLORBTN:
+    case WM_CTLCOLORLISTBOX:
+    case WM_CTLCOLORSCROLLBAR:
+      {
+        LRESULT res = 0;
+        if (DarkMode_OnCtlColor(message, wParam, lParam, res))
+          return res;
+      }
+      break;
     /*
     case WM_DROPFILES:
       CompressDropFiles(HDROP(wParam));
@@ -160,6 +182,21 @@ LRESULT CPanel::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 
 LRESULT CMyListView::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 {
+  // Header NM_CUSTOMDRAW is sent to the list-view parent (us); paint dark headers.
+  if (message == WM_NOTIFY && DarkMode_IsEnabled())
+  {
+    LPNMHDR hdr = (LPNMHDR)lParam;
+#ifndef UNDER_CE
+    HWND hHeader = ListView_GetHeader(*this);
+    if (hdr && hHeader && hdr->hwndFrom == hHeader && hdr->code == (UINT)NM_CUSTOMDRAW)
+    {
+      LRESULT res = 0;
+      if (DarkMode_OnHeaderCustomDraw((LPNMCUSTOMDRAW)hdr, res))
+        return res;
+    }
+#endif
+  }
+
   if (message == WM_CHAR)
   {
     UINT scanCode = (UINT)((lParam >> 16) & 0xFF);
@@ -429,6 +466,7 @@ bool CPanel::OnCreate(CREATESTRUCT * /* createStruct */)
   // extendedStyle |= _exStyle;
   //  _listView.SetExtendedListViewStyle(extendedStyle);
   SetExtendedStyle();
+  DarkMode_ApplyToListView(_listView);
 
   _listView.Show(SW_SHOW);
   _listView.InvalidateRect(NULL, true);
@@ -588,6 +626,15 @@ bool CPanel::OnCreate(CREATESTRUCT * /* createStruct */)
   OnSize(0, RECT_SIZE_X(rect), RECT_SIZE_Y(rect));
   */
 
+  DarkMode_ApplyToWindow(*this);
+  if (_headerToolBar)
+    DarkMode_ApplyToToolBar(_headerToolBar);
+  if (_headerReBar)
+    DarkMode_ApplyToReBar(_headerReBar);
+  if (_statusBar)
+    DarkMode_ApplyToStatusBar(_statusBar);
+  DarkMode_ApplyToChildControls(*this);
+
   SetTimer(kTimerID, kTimerElapse);
 
   // InitListCtrl();
@@ -706,6 +753,31 @@ bool CPanel::OnNotify(UINT /* controlID */, LPNMHDR header, LRESULT &result)
 
   if (!_processNotify)
     return false;
+
+  if (header->code == (UINT)NM_CUSTOMDRAW)
+  {
+    if (_headerToolBar && header->hwndFrom == (HWND)_headerToolBar)
+    {
+      if (DarkMode_OnToolBarCustomDraw((LPNMTBCUSTOMDRAW)header, result))
+        return true;
+    }
+    if (_statusBar && header->hwndFrom == (HWND)_statusBar)
+    {
+      if (DarkMode_OnStatusBarCustomDraw((LPNMCUSTOMDRAW)header, result))
+        return true;
+    }
+#ifndef UNDER_CE
+    if (_listView)
+    {
+      HWND hHeader = ListView_GetHeader(_listView);
+      if (hHeader && header->hwndFrom == hHeader)
+      {
+        if (DarkMode_OnHeaderCustomDraw((LPNMCUSTOMDRAW)header, result))
+          return true;
+      }
+    }
+#endif
+  }
 
   if (header->hwndFrom == _headerComboBox)
     return OnNotifyComboBox(header, result);

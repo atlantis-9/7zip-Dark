@@ -28,6 +28,7 @@ struct CFmSettings
   // bool Underline;
 
   bool ShowSystemMenu;
+  bool DarkMode;
 
   void Save() const;
   void Load();
